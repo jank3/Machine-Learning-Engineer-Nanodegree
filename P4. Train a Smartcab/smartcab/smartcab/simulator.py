@@ -18,7 +18,7 @@ class Simulator(object):
         'orange'  : (255, 128,   0)
     }
 
-    def __init__(self, env, size=None, frame_delay=10, update_delay=0.5):
+    def __init__(self, env, size=None, frame_delay=1, update_delay=10):
         self.env = env
         self.size = size if size is not None else ((self.env.grid_size[0] + 1) * self.env.block_size, (self.env.grid_size[1] + 1) * self.env.block_size)
         self.width, self.height = self.size
@@ -78,7 +78,7 @@ class Simulator(object):
 
                     # Render and sleep
                     self.render()
-                    pygame.time.wait(self.frame_delay)
+                    #pygame.time.wait(self.frame_delay)
                 except KeyboardInterrupt:
                     self.quit = True
                 finally:
