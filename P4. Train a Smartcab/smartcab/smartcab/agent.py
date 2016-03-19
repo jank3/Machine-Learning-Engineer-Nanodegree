@@ -28,8 +28,8 @@ class LearningAgent(Agent):
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
         self.Q = {}
-        self.alpha = 0.5
-        self.gamma = 0.5
+        self.alpha = 0.3
+        self.gamma = 0.3
         self.explore = 0.99
         self.stateHist = {}
         self.counter = 0
@@ -98,7 +98,7 @@ class LearningAgent(Agent):
         
         self.rewards += reward
         self.stateHist[self.trip * 1000 + self.counter] = [self.trip, 
-                            inputs['light'], oncoming, inputs['oncoming'], inputs['left'], 
+                            inputs['light'], opposing, inputs['oncoming'], inputs['left'], 
                             inputs['right'], self.next_waypoint, 
                             action, qA, qV, reward, self.gamma, deadline, choseExpl]
 
