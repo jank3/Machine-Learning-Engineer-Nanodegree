@@ -28,6 +28,7 @@ class LearningAgent(Agent):
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
         self.Q = {}
+        self.alpha = 0.1
         self.gamma = 0.20
         self.explore = 0.99
         self.stateHist = {}
@@ -43,7 +44,6 @@ class LearningAgent(Agent):
             df.columns = ['trip','light','oncoming','left','right','next_waypoint',
                           'action', 'qA', 'qV', 'reward', 'alpha', 'deadline','Explored']            
             df.to_pickle('runHist.pkl')
-            print(self.Q)
             self.trip += 1
             self.counter = 0
                     
@@ -67,8 +67,8 @@ class LearningAgent(Agent):
         choseExpl = False
         if random.randrange(0, 100)/100.0 < self.explore or qV == 0:
             action = validActions[random.randint(0,3)]
-            if self.explore > 0.05:
-                self.explore = self.explore  - 0.005
+            if self.explore > 0.00:
+                self.explore = self.explore  - 0.01
             choseExpl = True
         else:
             action = qA
@@ -78,7 +78,8 @@ class LearningAgent(Agent):
         
         # TODO: Learn policy based on state, action, reward
         s = stateRecord(inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'], self.next_waypoint)
-        self.Q[self.state][action] = reward + self.gamma * argMax(self.Q, s)[1]
+        
+        self.Q[self.state][action] = self.alpha * (reward + self.gamma * argMax(self.Q, s)[1])
         
         writeout = 'Lights:{} Goal:{} '.format( str(self.state[0]),str(self.state[4])) 
         writeout += 'Action:{} Reward:{} Qest:{} Expl:{} Exp:{}'.format(str(action), str(reward), str(self.gamma * argMax(self.Q, s)[1]), choseExpl, self.explore)
@@ -103,7 +104,7 @@ def run():
     e.set_primary_agent(a, enforce_deadline=True)  # set agent to track
 
     # Now simulate it
-    sim = Simulator(e, update_delay=1.0)  # reduce update_delay to speed up simulation
+    sim = Simulator(e, update_delay=0)  # reduce update_delay to speed up simulation
     sim.run(n_trials=100)  # press Esc or close pygame window to quit
 
 
