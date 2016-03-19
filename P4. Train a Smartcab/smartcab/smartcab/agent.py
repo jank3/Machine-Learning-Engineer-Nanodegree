@@ -28,8 +28,8 @@ class LearningAgent(Agent):
         self.planner = RoutePlanner(self.env, self)  # simple route planner to get next_waypoint
         # TODO: Initialize any additional variables here
         self.Q = {}
-        self.alpha = 0.1
-        self.gamma = 0.20
+        self.alpha = 0.5
+        self.gamma = 0.5
         self.explore = 0.99
         self.stateHist = {}
         self.counter = 0
@@ -52,8 +52,11 @@ class LearningAgent(Agent):
         self.next_waypoint = self.planner.next_waypoint()  # from route planner, also displayed by simulator
         inputs = self.env.sense(self)
         deadline = self.env.get_deadline(self)
+        # Possibly TODO: Add a 'isGoalToRight' metric to the state so the car can 
+        # learn right on red when the goal is also to the right.        
         
         # TODO: Update state
+        
         self.state = stateRecord(inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'], self.next_waypoint)
         if self.state not in self.Q:
             self.Q[self.state] = {'left':0, 'right':0, 'forward':0, None:0}
@@ -75,9 +78,9 @@ class LearningAgent(Agent):
             
         # Execute action and get reward
         reward = self.env.act(self, action)
-        
+        rInputs = self.env.sense(self)
         # TODO: Learn policy based on state, action, reward
-        s = stateRecord(inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'], self.next_waypoint)
+        s = stateRecord(rInputs['light'], rInputs['oncoming'], rInputs['left'], rInputs['right'], self.next_waypoint)
         
         self.Q[self.state][action] = self.alpha * (reward + self.gamma * argMax(self.Q, s)[1])
         
