@@ -6,7 +6,7 @@ from simulator import Simulator
 from collections import namedtuple
 import pandas as pd
 
-stateRecord = namedtuple('stateRecord', ['light','oncoming','right','left','nextWaypoint'])
+stateRecord = namedtuple('stateRecord', ['light','opposing','nextWaypoint'])
 validActions = [None, 'forward', 'left', 'right']
 
 def argMax(Q, s):
@@ -41,7 +41,7 @@ class LearningAgent(Agent):
         # TODO: Prepare for a new trip; reset any variables here, if required
         if self.counter > 0:
             df = pd.DataFrame(self.stateHist).T
-            df.columns = ['trip','light','oncoming','left','right','next_waypoint',
+            df.columns = ['trip','light','opposing','oncoming','left','right','next_waypoint',
                           'action', 'qA', 'qV', 'reward', 'alpha', 'deadline','Explored']            
             df.to_pickle('runHist.pkl')
             self.trip += 1
@@ -56,11 +56,14 @@ class LearningAgent(Agent):
         # learn right on red when the goal is also to the right.        
         
         # TODO: Update state
+        opposing = False
+        if inputs[self.next_waypoint.replace('forward','oncoming')]:
+            opposing = True
+        self.state = stateRecord(inputs['light'], opposing, self.next_waypoint)
         
-        self.state = stateRecord(inputs['light'], inputs['oncoming'], inputs['left'], inputs['right'], self.next_waypoint)
+        # Initialize the new state if it's novel
         if self.state not in self.Q:
             self.Q[self.state] = {'left':0, 'right':0, 'forward':0, None:0}
-        
         self.counter += 1
         
         
@@ -80,18 +83,22 @@ class LearningAgent(Agent):
         reward = self.env.act(self, action)
         rInputs = self.env.sense(self)
         # TODO: Learn policy based on state, action, reward
-        s = stateRecord(rInputs['light'], rInputs['oncoming'], rInputs['left'], rInputs['right'], self.next_waypoint)
+        nOpposing = False
+        if rInputs[self.next_waypoint.replace('forward','oncoming')]:
+            nOpposing = True
+            
+        s = stateRecord(rInputs['light'], nOpposing, self.next_waypoint)
         
         self.Q[self.state][action] = self.alpha * (reward + self.gamma * argMax(self.Q, s)[1])
         
-        writeout = 'Lights:{} Goal:{} '.format( str(self.state[0]),str(self.state[4])) 
+        writeout = 'Lights:{} Goal:{} '.format( str(self.state[0]), str(self.state[2])) 
         writeout += 'Action:{} Reward:{} Qest:{} Expl:{} Exp:{}'.format(str(action), str(reward), str(self.gamma * argMax(self.Q, s)[1]), choseExpl, self.explore)
         
         print(writeout)
         
         self.rewards += reward
         self.stateHist[self.trip * 1000 + self.counter] = [self.trip, 
-                            inputs['light'], inputs['oncoming'], inputs['left'], 
+                            inputs['light'], oncoming, inputs['oncoming'], inputs['left'], 
                             inputs['right'], self.next_waypoint, 
                             action, qA, qV, reward, self.gamma, deadline, choseExpl]
 
