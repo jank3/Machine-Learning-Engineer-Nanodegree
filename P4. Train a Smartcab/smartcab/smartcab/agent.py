@@ -45,7 +45,7 @@ class LearningAgent(Agent):
         # TODO: Prepare for a new trip; reset any variables here, if required
         self.trip += 1      # Increment the trip
         self.counter = 0    # Reset the counter for the next run
-        print('Trip:', self.trip)
+        #print('Trip:', self.trip)
             
         if self.trip == 100:
             hasHist = False            
@@ -123,8 +123,8 @@ def run():
     optimize = True
     globalNum = 0
     if optimize:
-        for alpha in range(1, 16):
-            for n in range(1,21):
+        for alpha in range(1, 11):
+            for n in range(1, 11):
                 e = Environment()  # create environment (also adds some dummy traffic)
                 a = e.create_agent(LearningAgent)  # create agent
                 a.experiment  ='alpha'
@@ -132,14 +132,14 @@ def run():
                 sim = Simulator(e, update_delay=0)  # reduce update_delay to speed up simulation
                 a.glNum = globalNum
                 globalNum += 1
-                a.alpha = alpha / 20.0
+                a.alpha = (alpha / 20.0) + 0.2
                 a.run += 1
                 a.counter = 0
                 a.trip = 0
                 sim.run(n_trials=100) 
             
-        for gamma in range(1, 16):
-            for n in range(1,21):
+        for gamma in range(1, 11):
+            for n in range(1, 11):
                 e = Environment()  # create environment (also adds some dummy traffic)
                 a = e.create_agent(LearningAgent)  # create agent
                 a.experiment  ='gamma'
@@ -147,7 +147,7 @@ def run():
                 sim = Simulator(e, update_delay=0)  # reduce update_delay to speed up simulation
                 a.glNum = globalNum
                 globalNum += 1
-                a.gamma = gamma / 20.0
+                a.gamma = (gamma / 20.0) + 0.2
                 a.run += 1
                 a.counter = 0
                 a.trip = 0
